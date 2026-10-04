@@ -1,0 +1,62 @@
+Finished scene: Assets/OutdoorsScene.unity
+Original terrain retained; scene backup in Backup/.
+Layers: meadow, soil, rock, shore. Mountain elevation varied gently above shoreline.
+house_vertical_boards -> Assets/Models/Materials  and Textures/Textures/Cabin/wood_verticalboard.jpeg
+house_porch_woodends -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+house_porch_plank -> Assets/Models/Materials  and Textures/Textures/Cabin/porch plank.jpeg
+house_supportbeams -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+house_lightwood -> Assets/Models/Materials  and Textures/Textures/Cabin/wood3.jpeg
+house_woodMidtonePost -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+rubber -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+glass -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+plastic_window_frame -> Assets/Models/Materials  and Textures/Textures/Cabin/wood3.jpeg
+rubber_green -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+cream_plastic -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+black_plastic -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+grey_plastic -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+emitter -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+welcome_mat -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+knitted_welcome_mat -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+cloth_curtain -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+house_supportbeam_ends -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+house_water_support_post -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+wood_painted_wood -> Assets/Models/Materials  and Textures/Textures/Cabin/wood3.jpeg
+metal_gutter -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_aged_bronze -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_white -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_rust -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_red -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_alumrusted -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+house_ceiling -> Assets/Models/Materials  and Textures/Textures/Cabin/house_ceiling.jpeg
+house_siding1 -> Assets/Models/Materials  and Textures/Textures/Cabin/house_siding1.jpeg
+house_siding2 -> Assets/Models/Materials  and Textures/Textures/Cabin/house_siding2.jpeg
+house_siding3 -> Assets/Models/Materials  and Textures/Textures/Cabin/house_siding3.jpeg
+house_siding4 -> Assets/Models/Materials  and Textures/Textures/Cabin/house_siding4.jpeg
+house_siding5 -> Assets/Models/Materials  and Textures/Textures/Cabin/house_siding5.jpeg
+house_interior_wall -> Assets/Models/Materials  and Textures/Textures/Cabin/interior wall.jpeg
+house_interior_floor -> Assets/Models/Materials  and Textures/Textures/Cabin/interior floor.jpeg
+roof -> Assets/Models/Materials  and Textures/Textures/Cabin/roof.jpeg
+house_windowframe -> Assets/Models/Materials  and Textures/Textures/Cabin/wood3.jpeg
+glass_SW_Door -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+wood_door -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+metal_brass -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+cloth_curtain_SW_Door -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+glass_SW_Door2 -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+wood_door_SW_Door2 -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+metal_brass_SW_Door2 -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+cloth_curtain_SW_Door2 -> Assets/Models/Materials  and Textures/Textures/Cabin/doors.jpeg
+rope -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+tire -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+metal_alumrusted.001 -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+metal_nail -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+dock_post -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+dock_post_ends -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+dock_supportboard_ends -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+dock_supportboard -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+dock_main_plank -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+dock_plank_ends -> Assets/Models/Materials  and Textures/Textures/Cabin/wood dock.jpeg
+metal_alum -> Assets/Models/Materials  and Textures/Textures/Cabin/metal.jpeg
+rope.001 -> Assets/Models/Materials  and Textures/Textures/Cabin/wood2.jpeg
+
+REFINED: detailed alpine rock, normal mapping, two texture scales, irregular slope/height transitions. Glass, fabric, rubber and plastics corrected.
