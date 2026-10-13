@@ -16,6 +16,10 @@ public static class IntroVideoSetup
     const string ScenePath = Root + "/IntroVideo.unity";
     const string BoatModel = "Assets/Models/Props/Orca/Orca.fbx";
     const float RodLength = 2.4f;
+    // The blank is a chain of short pieces so the director can bend it.
+    const int BlankSegments = 8;
+
+    static float BlankRadius(float k) => Mathf.Lerp(0.0075f, 0.0016f, k);
 
     [MenuItem("Tools/Intro Video/Build Scene")]
     public static void Build()
@@ -26,6 +30,11 @@ public static class IntroVideoSetup
         Directory.CreateDirectory(Root + "/Models");
         AssetDatabase.Refresh();
 
+        // Put back anything the director animates before reading the scene's own values.
+        var previous = Object.FindFirstObjectByType<IntroDirector>();
+        var sun = GameObject.Find("Sun");
+        if (previous && previous.sun) previous.sun.rotation = Quaternion.Euler(previous.sunDayEuler);
+
         var camGo = GameObject.Find("Main Camera");
         var cabin = GameObject.Find("cabin in the forest");
         var lake = GameObject.Find("Lake");
@@ -34,11 +43,8 @@ public static class IntroVideoSetup
         var cam = camGo.GetComponent<Camera>();
         cam.nearClipPlane = 0.1f;
 
-        foreach (string old in new[] { "IntroVideo", "Orca" })
-        {
-            var go = GameObject.Find(old);
-            if (go) Object.DestroyImmediate(go);
-        }
+        foreach (var go in scene.GetRootGameObjects())
+            if (go.name == "IntroVideo" || go.name == "Orca" || go.name == "Boat") Object.DestroyImmediate(go);
         var oldHand = camGo.transform.Find("RodHand");
         if (oldHand) Object.DestroyImmediate(oldHand.gameObject);
 
@@ -46,19 +52,19 @@ public static class IntroVideoSetup
         var director = root.AddComponent<IntroDirector>();
 
         // Boat: root pivot at the stern on the waterline, +Z towards the bow
-        var boat = new GameObject("Orca");
+        var boat = new GameObject("Boat");
         var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(BoatModel);
         var model = (GameObject)PrefabUtility.InstantiatePrefab(prefab, boat.transform);
         model.transform.localPosition = Vector3.zero;
         model.transform.localRotation = Quaternion.Euler(0f, 90f, 0f) * prefab.transform.localRotation;
 
         var meshes = BuildMeshes();
-        var rodProp = BuildRod("RodProp", meshes, out _);
+        var rodProp = BuildRod("RodProp", meshes, out _, out _);
         rodProp.transform.SetParent(boat.transform, false);
         rodProp.transform.localPosition = new Vector3(0.38f, 1.12f, 1.35f);
         rodProp.transform.localRotation = Quaternion.Euler(-76f, 25f, 0f);
 
-        var rodHand = BuildRod("RodHand", meshes, out Transform tip);
+        var rodHand = BuildRod("RodHand", meshes, out Transform tip, out Transform[] segments);
         rodHand.transform.SetParent(camGo.transform, false);
 
         var bobber = BuildBobber(meshes);
@@ -75,7 +81,7 @@ public static class IntroVideoSetup
 
         var rippleMaterial = Unlit("Ripple", new Color(1f, 1f, 1f, 0.5f), true);
         var ripples = new List<Renderer>();
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < IntroDirector.RippleEvents.Length; i++)
         {
             var ring = new GameObject("Ripple" + i);
             ring.transform.SetParent(root.transform, false);
@@ -105,6 +111,20 @@ public static class IntroVideoSetup
             wake.Add(r);
         }
 
+        var splash = new List<Renderer>();
+        for (int i = 0; i < 6; i++)
+        {
+            var patch = new GameObject("Splash" + i);
+            patch.transform.SetParent(root.transform, false);
+            patch.transform.localRotation = Quaternion.Euler(0f, (float)random.NextDouble() * 360f, 0f);
+            patch.AddComponent<MeshFilter>().sharedMesh = meshes["Patch"];
+            var r = patch.AddComponent<MeshRenderer>();
+            r.sharedMaterial = wakeMaterial;
+            r.shadowCastingMode = ShadowCastingMode.Off;
+            r.enabled = false;
+            splash.Add(r);
+        }
+
         var fadeGo = new GameObject("Fade");
         fadeGo.transform.SetParent(root.transform, false);
         var fade = fadeGo.AddComponent<Volume>();
@@ -122,10 +142,14 @@ public static class IntroVideoSetup
         director.rodProp = rodProp;
         director.rodHand = rodHand.transform;
         director.rodTip = tip;
+        director.rodSegments = segments;
         director.bobber = bobber.transform;
         director.line = line;
         director.ripples = ripples.ToArray();
         director.wake = wake.ToArray();
+        director.splash = splash.ToArray();
+        director.sun = sun ? sun.transform : null;
+        director.sunDayEuler = sun ? sun.transform.eulerAngles : Vector3.zero;
         director.fishingSpot = FindFishingSpot(cabin.transform, door.position, lake.transform.position.y);
         director.Evaluate(0f);
 
@@ -227,9 +251,14 @@ public static class IntroVideoSetup
     {
         string path = Root + "/Models/IntroMeshes.asset";
         AssetDatabase.DeleteAsset(path);
-        var blank = Frustum("Blank", 0.0075f, 0.0016f, RodLength - 0.3f, 12);
-        AssetDatabase.CreateAsset(blank, path);
-        var all = new Dictionary<string, Mesh> { ["Blank"] = blank };
+        var all = new Dictionary<string, Mesh>();
+        float segmentLength = (RodLength - 0.3f) / BlankSegments;
+        for (int i = 0; i < BlankSegments; i++)
+        {
+            var piece = Frustum("Blank" + i, BlankRadius(i / (float)BlankSegments), BlankRadius((i + 1f) / BlankSegments), segmentLength, 10);
+            if (i == 0) AssetDatabase.CreateAsset(piece, path); else AssetDatabase.AddObjectToAsset(piece, path);
+            all["Blank" + i] = piece;
+        }
         foreach (var m in new[] { Frustum("Cylinder", 1f, 1f, 1f, 20), Torus("Guide", 1f, 0.12f, 16, 6), Annulus("Ring", 0.86f, 1f, 48), Annulus("Patch", 0f, 0.5f, 24), Sphere("Sphere", 12, 16) })
         {
             AssetDatabase.AddObjectToAsset(m, path);
@@ -252,7 +281,7 @@ public static class IntroVideoSetup
     }
 
     // Rod along +Z with the butt at the origin; guides and reel hang below (-Y).
-    static GameObject BuildRod(string name, Dictionary<string, Mesh> meshes, out Transform tip)
+    static GameObject BuildRod(string name, Dictionary<string, Mesh> meshes, out Transform tip, out Transform[] segments)
     {
         var carbon = Lit("RodCarbon", new Color(0.03f, 0.035f, 0.045f), 0.2f, 0.75f);
         var cork = Lit("RodCork", new Color(0.62f, 0.44f, 0.27f), 0f, 0.2f);
@@ -267,7 +296,15 @@ public static class IntroVideoSetup
         Part("ReelSeat", t, cyl, carbon, new Vector3(0f, 0f, 0.18f), Vector3.zero, new Vector3(0.012f, 0.012f, 0.10f));
         Part("ForeGrip", t, cyl, cork, new Vector3(0f, 0f, 0.28f), Vector3.zero, new Vector3(0.014f, 0.014f, 0.09f));
         Part("Winding", t, cyl, accent, new Vector3(0f, 0f, 0.37f), Vector3.zero, new Vector3(0.0085f, 0.0085f, 0.04f));
-        Part("Blank", t, meshes["Blank"], carbon, new Vector3(0f, 0f, 0.3f), Vector3.zero, Vector3.one);
+
+        float segmentLength = (RodLength - 0.3f) / BlankSegments;
+        segments = new Transform[BlankSegments];
+        Transform parent = t;
+        for (int i = 0; i < BlankSegments; i++)
+        {
+            var piece = Part("Blank" + i, parent, meshes["Blank" + i], carbon, new Vector3(0f, 0f, i == 0 ? 0.3f : segmentLength), Vector3.zero, Vector3.one);
+            segments[i] = parent = piece.transform;
+        }
 
         // Spinning reel under the seat
         Part("ReelFoot", t, cyl, metal, new Vector3(0f, -0.012f, 0.23f), new Vector3(90f, 0f, 0f), new Vector3(0.006f, 0.006f, 0.05f));
@@ -282,12 +319,14 @@ public static class IntroVideoSetup
         {
             float k = i / (float)(at.Length - 1);
             float radius = Mathf.Lerp(0.02f, 0.005f, k);
-            float blankRadius = Mathf.Lerp(0.0075f, 0.0016f, (at[i] - 0.3f) / (RodLength - 0.3f));
-            Part("Guide" + i, t, meshes["Guide"], metal, new Vector3(0f, -(blankRadius + radius), at[i]), Vector3.zero, Vector3.one * radius);
+            float along = at[i] - 0.3f;
+            int segment = Mathf.Min(BlankSegments - 1, (int)(along / segmentLength));
+            float blankRadius = BlankRadius(along / (RodLength - 0.3f));
+            Part("Guide" + i, segments[segment], meshes["Guide"], metal, new Vector3(0f, -(blankRadius + radius), along - segment * segmentLength), Vector3.zero, Vector3.one * radius);
         }
         tip = new GameObject("Tip").transform;
-        tip.SetParent(t, false);
-        tip.localPosition = new Vector3(0f, -0.007f, RodLength);
+        tip.SetParent(segments[BlankSegments - 1], false);
+        tip.localPosition = new Vector3(0f, -0.007f, segmentLength);
         foreach (var r in rod.GetComponentsInChildren<Renderer>()) r.shadowCastingMode = ShadowCastingMode.On;
         return rod;
     }
@@ -297,9 +336,9 @@ public static class IntroVideoSetup
         var red = Lit("BobberRed", new Color(0.85f, 0.07f, 0.05f), 0f, 0.8f);
         var white = Lit("BobberWhite", new Color(0.93f, 0.93f, 0.9f), 0f, 0.8f);
         var bobber = new GameObject("Bobber");
-        Part("Top", bobber.transform, meshes["Sphere"], red, new Vector3(0f, 0.009f, 0f), Vector3.zero, new Vector3(0.036f, 0.036f, 0.036f));
-        Part("Bottom", bobber.transform, meshes["Sphere"], white, new Vector3(0f, -0.009f, 0f), Vector3.zero, new Vector3(0.036f, 0.036f, 0.036f));
-        Part("Stem", bobber.transform, meshes["Cylinder"], white, new Vector3(0f, 0.03f, 0f), new Vector3(-90f, 0f, 0f), new Vector3(0.004f, 0.004f, 0.05f));
+        Part("Top", bobber.transform, meshes["Sphere"], red, new Vector3(0f, 0.015f, 0f), Vector3.zero, new Vector3(0.06f, 0.06f, 0.06f));
+        Part("Bottom", bobber.transform, meshes["Sphere"], white, new Vector3(0f, -0.015f, 0f), Vector3.zero, new Vector3(0.06f, 0.06f, 0.06f));
+        Part("Stem", bobber.transform, meshes["Cylinder"], white, new Vector3(0f, 0.04f, 0f), new Vector3(-90f, 0f, 0f), new Vector3(0.005f, 0.005f, 0.07f));
         return bobber;
     }
 

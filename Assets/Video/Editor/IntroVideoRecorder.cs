@@ -29,7 +29,14 @@ public static class IntroVideoRecorder
     [MenuItem("Tools/Intro Video/Record Full Video")]
     public static void RecordFull()
     {
-        Enqueue(Clip("Intro_completo", 0f, IntroDirector.Duration, true, 0));
+        Enqueue(Clip("Intro_completo", 0f, IntroDirector.Duration, true, 0, false));
+    }
+
+    // Second cut: same intro plus the wait at dusk and the bite.
+    [MenuItem("Tools/Intro Video/Record Full Video With Bite")]
+    public static void RecordFullWithBite()
+    {
+        Enqueue(Clip("Intro_con_picada", 0f, IntroDirector.ExtendedDuration, true, 0, true));
     }
 
     // Separate shots without fades and with spare time at both ends, for editing.
@@ -37,23 +44,25 @@ public static class IntroVideoRecorder
     public static void RecordShots()
     {
         Enqueue(
-            Clip("Plano_1-3_casa_y_muelle", 0f, 12f, false, 1),
-            Clip("Plano_5_navegacion", 12f, 20f, false, 5),
-            Clip("Plano_7_llegada", 19.5f, 25f, false, 7),
-            Clip("Plano_8_lanzamiento", 23f, 30f, false, 8));
+            Clip("Plano_1-3_casa_y_muelle", 0f, 12f, false, 1, false),
+            Clip("Plano_5_navegacion", 12f, 20f, false, 5, false),
+            Clip("Plano_7_llegada", 19.5f, 25f, false, 7, false),
+            Clip("Plano_8_lanzamiento", 23f, 30f, false, 8, false),
+            Clip("Plano_9_espera_y_picada", 29.5f, IntroDirector.ExtendedDuration, false, 9, true));
     }
 
     [MenuItem("Tools/Intro Video/Record Everything")]
     public static void RecordAll()
     {
         RecordFull();
+        RecordFullWithBite();
         RecordShots();
     }
 
-    static string Clip(string name, float from, float to, bool fades, int soloShot)
+    static string Clip(string name, float from, float to, bool fades, int soloShot, bool extended)
     {
         var inv = System.Globalization.CultureInfo.InvariantCulture;
-        return string.Join("|", name, from.ToString(inv), to.ToString(inv), fades ? "1" : "0", soloShot.ToString());
+        return string.Join("|", name, from.ToString(inv), to.ToString(inv), fades ? "1" : "0", soloShot.ToString(), extended ? "1" : "0");
     }
 
     static List<string> Queue
@@ -108,6 +117,7 @@ public static class IntroVideoRecorder
             director.autoPlay = false;
             director.fades = clip[3] == "1";
             director.soloShot = int.Parse(clip[4]);
+            director.extended = clip[5] == "1";
             director.Play(from, from);
             if (--warmUp > 0) return;
 
