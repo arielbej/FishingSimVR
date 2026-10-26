@@ -24,7 +24,7 @@ MonoBehaviour:
     shareRecordingsInITunes: 0
     logLevel: 0
     version: 11.4.4
-    eulaAcceptedVersions: '{"Values":["11.4"]}'
+    eulaAcceptedVersions: '{"Values":["11.4","10.17"]}'
   database:
     disableModelExtraction: 0
   plugins:
