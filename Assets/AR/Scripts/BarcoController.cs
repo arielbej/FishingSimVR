@@ -33,7 +33,7 @@ public class BarcoController : MonoBehaviour
         currentSpeed = Mathf.MoveTowards(currentSpeed, target, rate * Time.deltaTime);
 
         // Un barco solo gira si avanza
-        float speedFactor = Mathf.Clamp(currentSpeed / maxSpeed, -1f, 1f);
+        float speedFactor = Mathf.Max(0.3f, Mathf.Abs(currentSpeed / maxSpeed));
         float turn = steer * turnSpeed * speedFactor * Time.deltaTime;
 
         transform.Rotate(0f, turn, 0f, Space.Self);
