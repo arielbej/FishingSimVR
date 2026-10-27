@@ -11,9 +11,15 @@ public class BarcoController : MonoBehaviour
     [Header("Pruebas")]
     public bool useKeyboard = true; // esto esta solo para probar purament el moviemiento
 
+    [Header("Animación")]
+    public Animator m_animator;
+    public float deadZone = 0.1f;
+
     float throttle;      // -1 (marcha atrás) a 1 (adelante)
     float steer;         // -1 (izquierda) a 1 (derecha)
     float currentSpeed;
+    float avance_anterior;
+    float giro_anterior;
 
     // La UI llamará a estos dos métodos más adelante
     public void SetThrottle(float value) => throttle = Mathf.Clamp(value, -1f, 1f);
@@ -38,5 +44,54 @@ public class BarcoController : MonoBehaviour
 
         transform.Rotate(0f, turn, 0f, Space.Self);
         transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime, Space.Self);
+
+        // Animaciones: solo cambiamos de estado cuando cambia la dirección
+        float avance = 0;
+        float giro = 0;
+        if (Mathf.Abs(throttle) > deadZone) avance = Mathf.Sign(throttle);
+        if (Mathf.Abs(steer) > deadZone) giro = Mathf.Sign(steer);
+
+        if (m_animator != null)
+        {
+            if (avance != avance_anterior)
+            {
+                m_animator.ResetTrigger("avanzar");
+                m_animator.ResetTrigger("retroceder");
+                m_animator.ResetTrigger("parar");
+                switch (avance)
+                {
+                    case > 0:
+                        m_animator.SetTrigger("avanzar");
+                        break;
+                    case < 0:
+                        m_animator.SetTrigger("retroceder");
+                        break;
+                    default:
+                        m_animator.SetTrigger("parar");
+                        break;
+                }
+            }
+
+            if (giro != giro_anterior)
+            {
+                m_animator.ResetTrigger("derecha");
+                m_animator.ResetTrigger("izquierda");
+                m_animator.ResetTrigger("recto");
+                switch (giro)
+                {
+                    case > 0:
+                        m_animator.SetTrigger("derecha");
+                        break;
+                    case < 0:
+                        m_animator.SetTrigger("izquierda");
+                        break;
+                    default:
+                        m_animator.SetTrigger("recto");
+                        break;
+                }
+            }
+        }
+        avance_anterior = avance;
+        giro_anterior = giro;
     }
 }
