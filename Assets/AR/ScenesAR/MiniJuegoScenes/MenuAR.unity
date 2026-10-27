@@ -772,6 +772,7 @@ MonoBehaviour:
   panelEscanearTrailer: {fileID: 2070854951}
   panelTrailer: {fileID: 1644072259}
   videoPlayer: {fileID: 413824872}
+  renderTexture: {fileID: 8400000, guid: bd06a31d5fe77c54692aee661c04dc15, type: 2}
 --- !u!1 &504050721
 GameObject:
   m_ObjectHideFlags: 0

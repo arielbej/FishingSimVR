@@ -14,7 +14,24 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
     [Header("Controlador del tráiler")]
     public SLTrailerController trailerController;
 
+    [Header("Estabilidad del tracking")]
+    [Tooltip("Tiempo que debe verse antes de considerarlo encontrado")]
+    public float tiempoParaEncontrar = 0.25f;
+
+    [Tooltip("Tiempo que debe estar realmente perdido antes de considerarlo perdido")]
+    public float tiempoParaPerder = 1.5f;
+
     private ObserverBehaviour objetivo;
+
+    // Estado instantáneo de Vuforia
+    private bool vistoBruto = false;
+
+    // Estado estable que utilizamos nosotros
+    private bool vistoEstable = false;
+
+    private float momentoUltimoCambio = 0f;
+
+    private bool modoTrailerAnterior = false;
 
     void Start()
     {
@@ -62,25 +79,83 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
         ObserverBehaviour behaviour,
         TargetStatus status)
     {
-        bool visto =
+        /*
+         * LIMITED TAMBIÉN CUENTA COMO VISIBLE.
+         *
+         * Vuforia puede entrar momentáneamente en LIMITED
+         * aunque sigamos enfocando el marcador.
+         */
+        bool nuevoVisto =
             status.Status == Status.TRACKED ||
             status.Status == Status.EXTENDED_TRACKED ||
             status.Status == Status.LIMITED;
 
+        if (nuevoVisto != vistoBruto)
+        {
+            vistoBruto = nuevoVisto;
+            momentoUltimoCambio = Time.unscaledTime;
+        }
+    }
+
+    void Update()
+    {
         if (trailerController == null)
             return;
 
-        if (!trailerController.ModoTrailerActivo)
-            return;
+        bool modoTrailerActual =
+            trailerController.ModoTrailerActivo;
 
-        if (visto)
+        // Entramos por primera vez al modo tráiler
+        if (modoTrailerActual && !modoTrailerAnterior)
         {
-            trailerController.MarcadorTrailerEncontrado();
+            if (vistoEstable)
+            {
+                Debug.Log(
+                    "[SereneLake] Target tráiler ENCONTRADO"
+                );
+
+                trailerController.MarcadorTrailerEncontrado();
+            }
         }
-        else
+
+        // Esperamos antes de confirmar cualquier cambio.
+        if (vistoBruto != vistoEstable)
         {
-            trailerController.MarcadorTrailerPerdido();
+            float tiempoNecesario =
+                vistoBruto
+                    ? tiempoParaEncontrar
+                    : tiempoParaPerder;
+
+            if (Time.unscaledTime - momentoUltimoCambio
+                >= tiempoNecesario)
+            {
+                vistoEstable = vistoBruto;
+
+                if (modoTrailerActual)
+                {
+                    if (vistoEstable)
+                    {
+                        Debug.Log(
+                            "[SereneLake] Target tráiler ENCONTRADO"
+                        );
+
+                        trailerController
+                            .MarcadorTrailerEncontrado();
+                    }
+                    else
+                    {
+                        Debug.Log(
+                            "[SereneLake] Target tráiler PERDIDO"
+                        );
+
+                        trailerController
+                            .MarcadorTrailerPerdido();
+                    }
+                }
+            }
         }
+
+        modoTrailerAnterior = modoTrailerActual;
     }
 
     void OnDestroy()
@@ -89,5 +164,7 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
         {
             objetivo.OnTargetStatusChanged -= AlCambiarEstado;
         }
+
+        VuforiaApplication.Instance.OnVuforiaStarted -= CrearMarcador;
     }
 }
