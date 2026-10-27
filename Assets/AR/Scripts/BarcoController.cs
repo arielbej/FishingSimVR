@@ -15,6 +15,12 @@ public class BarcoController : MonoBehaviour
     public Animator m_animator;
     public float deadZone = 0.1f;
 
+    [Header("Efectos")]
+    public ParticleSystem ondas;   // ondas en el agua cuando el barco está parado
+
+    [Header("Límites del agua")]
+    public float limite = 0.4f;    // el barco no sale del agua (en metros desde el centro del marcador)
+
     float throttle;      // -1 (marcha atrás) a 1 (adelante)
     float steer;         // -1 (izquierda) a 1 (derecha)
     float currentSpeed;
@@ -45,6 +51,12 @@ public class BarcoController : MonoBehaviour
         transform.Rotate(0f, turn, 0f, Space.Self);
         transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime, Space.Self);
 
+        // Que no se salga del agua
+        Vector3 pos = transform.localPosition;
+        pos.x = Mathf.Clamp(pos.x, -limite, limite);
+        pos.z = Mathf.Clamp(pos.z, -limite, limite);
+        transform.localPosition = pos;
+
         // Animaciones: solo cambiamos de estado cuando cambia la dirección
         float avance = 0;
         float giro = 0;
@@ -62,12 +74,15 @@ public class BarcoController : MonoBehaviour
                 {
                     case > 0:
                         m_animator.SetTrigger("avanzar");
+                        if (ondas != null) ondas.Stop();
                         break;
                     case < 0:
                         m_animator.SetTrigger("retroceder");
+                        if (ondas != null) ondas.Stop();
                         break;
                     default:
                         m_animator.SetTrigger("parar");
+                        if (ondas != null) ondas.Play();
                         break;
                 }
             }
