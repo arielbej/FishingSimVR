@@ -4,22 +4,34 @@ using UnityEngine.Video;
 public class SLTrailerController : MonoBehaviour
 {
     public GameObject panelMenu;
+    public GameObject panelEscanearTrailer;
     public GameObject panelTrailer;
     public VideoPlayer videoPlayer;
 
-    void Start()
-    {
-        // Al arrancar, el tráiler debe estar totalmente parado
-        if (videoPlayer != null)
-            videoPlayer.Stop();
+    private bool modoTrailerActivo = false;
 
-        if (panelTrailer != null)
-            panelTrailer.SetActive(false);
+    public bool ModoTrailerActivo
+    {
+        get { return modoTrailerActivo; }
     }
 
     public void AbrirTrailer()
     {
+        modoTrailerActivo = true;
+
         panelMenu.SetActive(false);
+        panelTrailer.SetActive(false);
+        panelEscanearTrailer.SetActive(true);
+
+        videoPlayer.Stop();
+    }
+
+    public void MarcadorTrailerEncontrado()
+    {
+        if (!modoTrailerActivo)
+            return;
+
+        panelEscanearTrailer.SetActive(false);
         panelTrailer.SetActive(true);
 
         videoPlayer.Stop();
@@ -27,11 +39,23 @@ public class SLTrailerController : MonoBehaviour
         videoPlayer.Play();
     }
 
+    public void MarcadorTrailerPerdido()
+    {
+        if (!modoTrailerActivo)
+            return;
+
+        if (videoPlayer.isPlaying)
+            videoPlayer.Pause();
+    }
+
     public void CerrarTrailer()
     {
+        modoTrailerActivo = false;
+
         videoPlayer.Stop();
 
         panelTrailer.SetActive(false);
+        panelEscanearTrailer.SetActive(false);
         panelMenu.SetActive(true);
     }
 }
