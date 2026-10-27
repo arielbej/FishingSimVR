@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Acciones de los botones del menú. De momento están vacías:
@@ -9,7 +10,7 @@ public class SLBotonesMenu : MonoBehaviour
     public SLTrailerController trailerController;
 
     public void Minijuego()     { /* TODO: cargar el minijuego */ }
-    public void VisorBarco3D()  { /* TODO: visor del modelo (girar el barco) */ }
+    public void VisorBarco3D()  { SceneManager.LoadScene("VisorBarco3D"); }
     public void PilotarBarco()  { /* TODO: movimiento del vehículo */ }
     public void VerTrailer()
     {
