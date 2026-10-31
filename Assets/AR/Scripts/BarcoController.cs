@@ -8,6 +8,13 @@ public class BarcoController : MonoBehaviour
     public float deceleration = 0.8f;
     public float turnSpeed = 45f;      // grados por segundo
 
+    [Header("Control por dirección")]
+    public Transform cam;                 // la ARCamera (si está vacío usa Camera.main)
+    public bool controlPorDireccion = true;
+
+    Vector2 stick;
+    public void SetStick(Vector2 v) => stick = Vector2.ClampMagnitude(v, 1f);
+
     [Header("Pruebas")]
     public bool useKeyboard = true; // esto esta solo para probar purament el moviemiento
 
@@ -20,16 +27,24 @@ public class BarcoController : MonoBehaviour
 
     [Header("Límites del agua")]
     public float limite = 0.4f;    // el barco no sale del agua (en metros desde el centro del marcador)
+    public Vector2 centroAgua = new Vector2(-10.7f, -11.72f);   // centro del lago en local (X, Z)
 
     float throttle;      // -1 (marcha atrás) a 1 (adelante)
     float steer;         // -1 (izquierda) a 1 (derecha)
     float currentSpeed;
     float avance_anterior;
     float giro_anterior;
+    Vector3 posInicial;
 
-    // La UI llamará a estos dos métodos más adelante
+    // La UI llama a estos dos métodos más adelante
     public void SetThrottle(float value) => throttle = Mathf.Clamp(value, -1f, 1f);
     public void SetSteer(float value) => steer = Mathf.Clamp(value, -1f, 1f);
+
+    void Start()
+    {
+        if (cam == null && Camera.main != null) cam = Camera.main.transform;
+        posInicial = transform.localPosition;
+    }
 
     void Update()
     {
@@ -39,23 +54,50 @@ public class BarcoController : MonoBehaviour
             steer = Input.GetAxis("Horizontal");     // A/D o flechas
         }
 
-        // Aceleración suave hacia la velocidad objetivo
+        // ================================ MOVIMIENTO BASICO===========================================
+        Vector3 up = transform.parent != null ? transform.parent.up : Vector3.up;
+
+        if (controlPorDireccion && !useKeyboard)
+        {
+            // Dirección deseada: el stick relativo a la cámara, sobre el plano del agua
+            Vector3 camF = Vector3.ProjectOnPlane(cam.forward, up).normalized;
+            Vector3 camR = Vector3.ProjectOnPlane(cam.right, up).normalized;
+            Vector3 dir = camF * stick.y + camR * stick.x;
+
+            if (dir.magnitude > deadZone)
+            {
+                float angulo = Vector3.SignedAngle(transform.forward, dir, up);
+                float giroFrame = Mathf.Clamp(angulo, -turnSpeed * Time.deltaTime, turnSpeed * Time.deltaTime);
+                transform.Rotate(up, giroFrame, Space.World);
+
+                // Solo avanza cuanto más alineado esté con la dirección pedida
+                float alineacion = Mathf.Clamp01(Vector3.Dot(transform.forward, dir.normalized));
+                throttle = Mathf.Min(dir.magnitude, 1f) * alineacion;
+                steer = Mathf.Clamp(angulo / 45f, -1f, 1f);   // para las animaciones
+            }
+            else { throttle = 0f; steer = 0f; }
+        }
+
         float target = throttle * maxSpeed;
         float rate = Mathf.Abs(target) > 0.01f ? acceleration : deceleration;
         currentSpeed = Mathf.MoveTowards(currentSpeed, target, rate * Time.deltaTime);
 
-        // Un barco solo gira si avanza
-        float speedFactor = Mathf.Max(0.3f, Mathf.Abs(currentSpeed / maxSpeed));
-        float turn = steer * turnSpeed * speedFactor * Time.deltaTime;
-
-        transform.Rotate(0f, turn, 0f, Space.Self);
+        if (!controlPorDireccion || useKeyboard)
+        {
+            float speedFactor = Mathf.Max(0.3f, Mathf.Abs(currentSpeed / maxSpeed));
+            transform.Rotate(0f, steer * turnSpeed * speedFactor * Time.deltaTime, 0f, Space.Self);
+        }
         transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime, Space.Self);
 
         // Que no se salga del agua
         Vector3 pos = transform.localPosition;
-        pos.x = Mathf.Clamp(pos.x, -limite, limite);
-        pos.z = Mathf.Clamp(pos.z, -limite, limite);
+        pos.x = Mathf.Clamp(pos.x, centroAgua.x - limite, centroAgua.x + limite);
+        pos.z = Mathf.Clamp(pos.z, centroAgua.y - limite, centroAgua.y + limite);
         transform.localPosition = pos;
+
+        // ================================ MOVIMIENTO BASICO===========================================
+
+
 
         // Animaciones: solo cambiamos de estado cuando cambia la dirección
         float avance = 0;
@@ -108,5 +150,10 @@ public class BarcoController : MonoBehaviour
         }
         avance_anterior = avance;
         giro_anterior = giro;
+    }
+    public void ResetPosition()
+    {
+        Debug.Log("Reset pulsado");
+        transform.localPosition = posInicial;
     }
 }
