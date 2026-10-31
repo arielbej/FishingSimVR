@@ -27,6 +27,7 @@ public class BarcoController : MonoBehaviour
 
     [Header("Límites del agua")]
     public float limite = 0.4f;    // el barco no sale del agua (en metros desde el centro del marcador)
+    public Vector2 centroAgua = new Vector2(-10.7f, -11.72f);   // centro del lago en local (X, Z)
 
     float throttle;      // -1 (marcha atrás) a 1 (adelante)
     float steer;         // -1 (izquierda) a 1 (derecha)
@@ -87,6 +88,12 @@ public class BarcoController : MonoBehaviour
             transform.Rotate(0f, steer * turnSpeed * speedFactor * Time.deltaTime, 0f, Space.Self);
         }
         transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime, Space.Self);
+
+        // Que no se salga del agua
+        Vector3 pos = transform.localPosition;
+        pos.x = Mathf.Clamp(pos.x, centroAgua.x - limite, centroAgua.x + limite);
+        pos.z = Mathf.Clamp(pos.z, centroAgua.y - limite, centroAgua.y + limite);
+        transform.localPosition = pos;
 
         // ================================ MOVIMIENTO BASICO===========================================
 
