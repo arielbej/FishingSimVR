@@ -4,8 +4,9 @@ public class BoatUI : MonoBehaviour
 {
     public BarcoController barco;
     public JoystickBehavour joystick;
+    Vector3 posInicial;
 
-    void Start() => barco.useKeyboard = false;   // ahora manda el joystick
+    void Start() =>barco.useKeyboard = false;   // ahora manda el joystick
 
     void Update()
     {

@@ -26,10 +26,14 @@ public class BarcoController : MonoBehaviour
     float currentSpeed;
     float avance_anterior;
     float giro_anterior;
+    Vector3 posInicial;
 
-    // La UI llamará a estos dos métodos más adelante
+    // La UI llama a estos dos métodos más adelante
     public void SetThrottle(float value) => throttle = Mathf.Clamp(value, -1f, 1f);
     public void SetSteer(float value) => steer = Mathf.Clamp(value, -1f, 1f);
+
+    void Start() => posInicial = transform.localPosition;
+
 
     void Update()
     {
@@ -39,6 +43,7 @@ public class BarcoController : MonoBehaviour
             steer = Input.GetAxis("Horizontal");     // A/D o flechas
         }
 
+        // ================================ MOVIMIENTO BASICO===========================================
         // Aceleración suave hacia la velocidad objetivo
         float target = throttle * maxSpeed;
         float rate = Mathf.Abs(target) > 0.01f ? acceleration : deceleration;
@@ -51,11 +56,15 @@ public class BarcoController : MonoBehaviour
         transform.Rotate(0f, turn, 0f, Space.Self);
         transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime, Space.Self);
 
-        // Que no se salga del agua
+        // Que no se salga del agua / el Limite de movimiento del barco
         Vector3 pos = transform.localPosition;
         pos.x = Mathf.Clamp(pos.x, -limite, limite);
         pos.z = Mathf.Clamp(pos.z, -limite, limite);
         transform.localPosition = pos;
+
+       // ================================ MOVIMIENTO BASICO===========================================
+
+
 
         // Animaciones: solo cambiamos de estado cuando cambia la dirección
         float avance = 0;
@@ -108,5 +117,10 @@ public class BarcoController : MonoBehaviour
         }
         avance_anterior = avance;
         giro_anterior = giro;
+    }
+    public void ResetPosition()
+    {
+        Debug.Log("Reset pulsado");
+        transform.localPosition = posInicial;
     }
 }
