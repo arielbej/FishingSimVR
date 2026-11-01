@@ -6,71 +6,53 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
     [Header("Marcador del tráiler")]
     public Texture2D imagenMarcador;
 
-    [Tooltip("Ancho real del marcador impreso, en metros")]
+    [Tooltip("Ancho real del marcador, en metros")]
     public float anchoMetros = 0.2f;
 
     public string nombre = "marcador_trailer";
 
-    [Header("Controlador del tráiler")]
+    [Header("Controlador")]
     public SLTrailerController trailerController;
 
-    [Header("Contenido AR")]
+    [Header("Contenido del tráiler")]
     public GameObject contenidoTrailerAR;
 
-    [Header("Estabilidad del tracking")]
-    [Tooltip("Tiempo que debe verse antes de considerarlo encontrado")]
-    public float tiempoParaEncontrar = 0.25f;
+    [Header("Cámara AR")]
+    public Camera arCamera;
 
-    [Tooltip("Tiempo que debe estar perdido antes de considerarlo perdido")]
-    public float tiempoParaPerder = 1.5f;
+    [Header("Detección")]
+    public float tiempoParaEncontrar = 0.20f;
 
-    [Header("Suavizado del movimiento")]
-    [Tooltip("Velocidad con la que el panel sigue la posición del marcador")]
-    [Range(1f, 20f)]
-    public float suavizadoPosicion = 4f;
+    [Tooltip("Tiempo que aguantamos la última posición si Vuforia pierde el marcador un instante")]
+    public float tiempoGraciaPerdida = 0.60f;
 
-    [Tooltip("Velocidad con la que el panel sigue la rotación del marcador")]
-    [Range(1f, 20f)]
-    public float suavizadoRotacion = 3f;
+    [Header("Estabilización")]
+    [Tooltip("Más alto = sigue más rápido. Más bajo = más suave.")]
+    public float suavizadoPosicion = 12f;
 
-    [Header("Zona muerta")]
-    [Tooltip("Movimientos menores que esta distancia se ignoran")]
-    public float distanciaMinima = 0.015f;
+    [Tooltip("Más alto = gira más rápido. Más bajo = más suave.")]
+    public float suavizadoRotacion = 10f;
 
-    [Tooltip("Giros menores que este ángulo se ignoran")]
-    public float anguloMinimo = 3f;
+    [Header("Ajuste sobre el marcador")]
+    public Vector3 offsetLocal = Vector3.zero;
+
+    [Tooltip("Corrección adicional de orientación")]
+    public Vector3 rotacionLocal = Vector3.zero;
 
     private ObserverBehaviour objetivo;
 
-    private bool vistoBruto = false;
-    private bool vistoEstable = false;
-
-    private float momentoUltimoCambio = 0f;
-
-    // Transformación del contenido respecto al marcador
-    private Vector3 posicionRelativa;
-    private Quaternion rotacionRelativa;
-    private Vector3 escalaOriginal;
-
+    private bool marcadorVisto = false;
+    private bool trailerIniciado = false;
     private bool poseInicializada = false;
+
+    private float momentoEncontrado = 0f;
+    private float momentoPerdido = 0f;
+
+    private bool modoTrailerAnterior = false;
 
     void Start()
     {
-        // Guardamos la configuración que ya tienes hecha
-        // en Canvas_TrailerAR.
-        if (contenidoTrailerAR != null)
-        {
-            posicionRelativa =
-                contenidoTrailerAR.transform.localPosition;
-
-            rotacionRelativa =
-                contenidoTrailerAR.transform.localRotation;
-
-            escalaOriginal =
-                contenidoTrailerAR.transform.localScale;
-
-            contenidoTrailerAR.SetActive(false);
-        }
+        PrepararCanvas();
 
         if (VuforiaApplication.Instance.IsRunning)
         {
@@ -80,6 +62,25 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
         {
             VuforiaApplication.Instance.OnVuforiaStarted += CrearMarcador;
         }
+    }
+
+    void PrepararCanvas()
+    {
+        if (contenidoTrailerAR == null)
+            return;
+
+        Canvas canvas =
+            contenidoTrailerAR.GetComponent<Canvas>();
+
+        if (canvas != null)
+        {
+            canvas.renderMode = RenderMode.WorldSpace;
+
+            if (arCamera != null)
+                canvas.worldCamera = arCamera;
+        }
+
+        contenidoTrailerAR.SetActive(false);
     }
 
     void CrearMarcador()
@@ -92,7 +93,7 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
         if (imagenMarcador == null)
         {
             Debug.LogError(
-                "[SereneLake] No hay imagen asignada al marcador del tráiler"
+                "[SereneLake] Falta la imagen del marcador del tráiler"
             );
 
             return;
@@ -114,31 +115,10 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
             return;
         }
 
-        /*
-         * IMPORTANTE:
-         *
-         * No hacemos Canvas_TrailerAR hijo directo del ImageTarget.
-         *
-         * En vez de eso seguimos la posición del marcador manualmente.
-         * Así podemos suavizar los movimientos y eliminar el temblor.
-         */
-        if (contenidoTrailerAR != null)
-        {
-            contenidoTrailerAR.transform.SetParent(
-                null,
-                true
-            );
-
-            contenidoTrailerAR.transform.localScale =
-                escalaOriginal;
-
-            contenidoTrailerAR.SetActive(false);
-        }
-
         objetivo.OnTargetStatusChanged += AlCambiarEstado;
 
         Debug.Log(
-            "[SereneLake] Marcador del tráiler creado correctamente"
+            "[SereneLake] Marcador del tráiler creado"
         );
     }
 
@@ -147,148 +127,134 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
         TargetStatus status
     )
     {
-        bool nuevoVisto =
+        bool vistoAhora =
             status.Status == Status.TRACKED ||
-            status.Status == Status.EXTENDED_TRACKED ||
-            status.Status == Status.LIMITED;
+            status.Status == Status.EXTENDED_TRACKED;
 
-        if (nuevoVisto != vistoBruto)
+        if (vistoAhora && !marcadorVisto)
         {
-            vistoBruto = nuevoVisto;
-            momentoUltimoCambio = Time.unscaledTime;
+            marcadorVisto = true;
+            momentoEncontrado = Time.unscaledTime;
+        }
+
+        if (!vistoAhora && marcadorVisto)
+        {
+            marcadorVisto = false;
+            momentoPerdido = Time.unscaledTime;
         }
     }
 
     void Update()
     {
-        if (objetivo == null)
-            return;
-
-        // =====================================================
-        // MOVIMIENTO SUAVIZADO
-        // =====================================================
-
-        if (vistoBruto || vistoEstable)
+        if (
+            trailerController == null ||
+            objetivo == null ||
+            contenidoTrailerAR == null ||
+            arCamera == null
+        )
         {
-            ActualizarPoseSuavizada();
+            return;
         }
 
-        if (trailerController == null)
-            return;
+        bool modoTrailer =
+            trailerController.ModoTrailerActivo;
 
-        // Si no estamos en modo tráiler, esperamos.
-        if (!trailerController.ModoTrailerActivo)
+        if (modoTrailer && !modoTrailerAnterior)
         {
-            vistoEstable = false;
+            trailerIniciado = false;
+            poseInicializada = false;
+        }
+
+        if (!modoTrailer)
+        {
+            trailerIniciado = false;
             poseInicializada = false;
 
+            modoTrailerAnterior = false;
             return;
         }
 
-        // =====================================================
-        // ESTABILIDAD DEL TRACKING
-        // =====================================================
-
-        if (vistoBruto != vistoEstable)
+        if (marcadorVisto)
         {
-            float tiempoNecesario =
-                vistoBruto
-                ? tiempoParaEncontrar
-                : tiempoParaPerder;
-
             if (
-                Time.unscaledTime - momentoUltimoCambio
-                >= tiempoNecesario
+                Time.unscaledTime - momentoEncontrado
+                >= tiempoParaEncontrar
             )
             {
-                vistoEstable = vistoBruto;
+                SeguirMarcadorSuavizado();
 
-                if (vistoEstable)
+                if (!trailerIniciado)
                 {
-                    // Antes de mostrarlo lo colocamos
-                    // exactamente en la posición correcta.
-                    ActualizarPoseInstantanea();
-
-                    Debug.Log(
-                        "[SereneLake] Target tráiler ENCONTRADO"
-                    );
+                    trailerIniciado = true;
 
                     trailerController
                         .MarcadorTrailerEncontrado();
-                }
-                else
-                {
-                    Debug.Log(
-                        "[SereneLake] Target tráiler PERDIDO"
-                    );
 
-                    trailerController
-                        .MarcadorTrailerPerdido();
+                    Debug.Log(
+                        "[SereneLake] Tráiler siguiendo marcador y mirando a cámara"
+                    );
                 }
             }
         }
+        else if (trailerIniciado)
+        {
+            float tiempoPerdido =
+                Time.unscaledTime - momentoPerdido;
+
+            if (tiempoPerdido > tiempoGraciaPerdida)
+            {
+                // Mantiene la última posición.
+                // Cuando vuelve el tracking continúa suavemente.
+            }
+        }
+
+        modoTrailerAnterior = modoTrailer;
     }
 
-    // =========================================================
-    // COLOCACIÓN INSTANTÁNEA
-    // =========================================================
-
-    void ActualizarPoseInstantanea()
+    void SeguirMarcadorSuavizado()
     {
         if (
             objetivo == null ||
-            contenidoTrailerAR == null
+            contenidoTrailerAR == null ||
+            arCamera == null
         )
         {
             return;
         }
 
+        // POSICIÓN:
+        // sigue al marcador.
         Vector3 posicionObjetivo =
             objetivo.transform.TransformPoint(
-                posicionRelativa
+                offsetLocal
             );
 
-        Quaternion rotacionObjetivo =
-            objetivo.transform.rotation *
-            rotacionRelativa;
-
-        contenidoTrailerAR.transform.position =
+        // ROTACIÓN:
+        // siempre mira hacia la cámara.
+        Vector3 direccionCamara =
+            arCamera.transform.position -
             posicionObjetivo;
 
-        contenidoTrailerAR.transform.rotation =
-            rotacionObjetivo;
+        Quaternion rotacionObjetivo;
 
-        contenidoTrailerAR.transform.localScale =
-            escalaOriginal;
-
-        poseInicializada = true;
-    }
-
-    // =========================================================
-    // SEGUIMIENTO SUAVIZADO + ZONA MUERTA
-    // =========================================================
-
-    void ActualizarPoseSuavizada()
-    {
-        if (
-            objetivo == null ||
-            contenidoTrailerAR == null
-        )
+        if (direccionCamara.sqrMagnitude > 0.0001f)
         {
-            return;
+            rotacionObjetivo =
+                Quaternion.LookRotation(
+                    -direccionCamara.normalized,
+                    arCamera.transform.up
+                );
+
+            rotacionObjetivo *=
+                Quaternion.Euler(rotacionLocal);
+        }
+        else
+        {
+            rotacionObjetivo =
+                contenidoTrailerAR.transform.rotation;
         }
 
-        Vector3 posicionObjetivo =
-            objetivo.transform.TransformPoint(
-                posicionRelativa
-            );
-
-        Quaternion rotacionObjetivo =
-            objetivo.transform.rotation *
-            rotacionRelativa;
-
-        // Primera vez:
-        // lo colocamos directamente.
+        // Primera detección
         if (!poseInicializada)
         {
             contenidoTrailerAR.transform.position =
@@ -302,80 +268,45 @@ public class SLMarcadorTrailerRuntime : MonoBehaviour
             return;
         }
 
-        // =====================================================
-        // CALCULAR CUÁNTO SE HA MOVIDO
-        // =====================================================
+        float dt = Time.unscaledDeltaTime;
 
-        float distancia =
-            Vector3.Distance(
+        float factorPosicion =
+            1f - Mathf.Exp(
+                -suavizadoPosicion * dt
+            );
+
+        float factorRotacion =
+            1f - Mathf.Exp(
+                -suavizadoRotacion * dt
+            );
+
+        contenidoTrailerAR.transform.position =
+            Vector3.Lerp(
                 contenidoTrailerAR.transform.position,
-                posicionObjetivo
+                posicionObjetivo,
+                factorPosicion
             );
 
-        float angulo =
-            Quaternion.Angle(
+        contenidoTrailerAR.transform.rotation =
+            Quaternion.Slerp(
                 contenidoTrailerAR.transform.rotation,
-                rotacionObjetivo
+                rotacionObjetivo,
+                factorRotacion
             );
-
-        // =====================================================
-        // POSICIÓN
-        //
-        // Si el movimiento es muy pequeño, NO lo hacemos.
-        // Esto elimina el temblor de la mano.
-        // =====================================================
-
-        if (distancia > distanciaMinima)
-        {
-            float factorPosicion =
-                1f -
-                Mathf.Exp(
-                    -suavizadoPosicion *
-                    Time.unscaledDeltaTime
-                );
-
-            contenidoTrailerAR.transform.position =
-                Vector3.Lerp(
-                    contenidoTrailerAR.transform.position,
-                    posicionObjetivo,
-                    factorPosicion
-                );
-        }
-
-        // =====================================================
-        // ROTACIÓN
-        //
-        // También ignoramos pequeños giros.
-        // =====================================================
-
-        if (angulo > anguloMinimo)
-        {
-            float factorRotacion =
-                1f -
-                Mathf.Exp(
-                    -suavizadoRotacion *
-                    Time.unscaledDeltaTime
-                );
-
-            contenidoTrailerAR.transform.rotation =
-                Quaternion.Slerp(
-                    contenidoTrailerAR.transform.rotation,
-                    rotacionObjetivo,
-                    factorRotacion
-                );
-        }
     }
 
     void OnDestroy()
     {
         if (objetivo != null)
         {
-            objetivo.OnTargetStatusChanged -= AlCambiarEstado;
+            objetivo.OnTargetStatusChanged -=
+                AlCambiarEstado;
         }
 
         if (VuforiaApplication.Instance != null)
         {
-            VuforiaApplication.Instance.OnVuforiaStarted -= CrearMarcador;
+            VuforiaApplication.Instance.OnVuforiaStarted -=
+                CrearMarcador;
         }
     }
 }

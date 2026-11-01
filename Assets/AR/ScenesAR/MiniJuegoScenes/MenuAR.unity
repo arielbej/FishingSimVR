@@ -2501,13 +2501,8 @@ MonoBehaviour:
   anchoMetros: 0.2
   nombre: marcador_trailer
   trailerController: {fileID: 413824875}
-  contenidoTrailerAR: {fileID: 0}
+  contenidoTrailerAR: {fileID: 277737314}
   tiempoParaEncontrar: 0.25
-  tiempoParaPerder: 1.5
-  suavizadoPosicion: 3
-  suavizadoRotacion: 2
-  distanciaMinima: 0.02
-  anguloMinimo: 4
 --- !u!4 &1125710529
 Transform:
   m_ObjectHideFlags: 0
