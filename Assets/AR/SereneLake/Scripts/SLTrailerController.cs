@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Video;
 
 public class SLTrailerController : MonoBehaviour
@@ -10,7 +11,9 @@ public class SLTrailerController : MonoBehaviour
 
     [Header("Vídeo")]
     public VideoPlayer videoPlayer;
-    public RenderTexture renderTexture;
+
+    [Header("Pantalla del tráiler")]
+    public RawImage rawImageTrailer;
 
     private bool modoTrailerActivo = false;
     private bool trailerYaIniciado = false;
@@ -25,6 +28,11 @@ public class SLTrailerController : MonoBehaviour
     {
         if (videoPlayer != null)
         {
+            // IMPORTANTE:
+            // El vídeo ya no utiliza RenderTexture.
+            // Obtenemos la imagen directamente con videoPlayer.texture.
+            videoPlayer.renderMode = VideoRenderMode.APIOnly;
+
             videoPlayer.playOnAwake = false;
             videoPlayer.isLooping = false;
 
@@ -34,13 +42,37 @@ public class SLTrailerController : MonoBehaviour
             videoPlayer.loopPointReached += VideoTerminado;
         }
 
+        if (rawImageTrailer != null)
+        {
+            rawImageTrailer.texture = null;
+        }
+
         if (panelTrailer != null)
+        {
             panelTrailer.SetActive(false);
+        }
 
         if (panelEscanearTrailer != null)
+        {
             panelEscanearTrailer.SetActive(false);
+        }
+    }
 
-        LimpiarPantalla();
+    void Update()
+    {
+        // Mientras el VideoPlayer tenga imagen,
+        // la ponemos directamente en el RawImage.
+        if (
+            videoPlayer != null &&
+            rawImageTrailer != null &&
+            videoPlayer.texture != null
+        )
+        {
+            if (rawImageTrailer.texture != videoPlayer.texture)
+            {
+                rawImageTrailer.texture = videoPlayer.texture;
+            }
+        }
     }
 
     // =========================================================
@@ -54,16 +86,22 @@ public class SLTrailerController : MonoBehaviour
         trailerYaIniciado = false;
         trailerTerminado = false;
 
+        ResetearVideo();
+
         if (panelMenu != null)
+        {
             panelMenu.SetActive(false);
+        }
 
         if (panelTrailer != null)
+        {
             panelTrailer.SetActive(false);
+        }
 
         if (panelEscanearTrailer != null)
+        {
             panelEscanearTrailer.SetActive(true);
-
-        ResetearVideo();
+        }
     }
 
     // =========================================================
@@ -73,15 +111,21 @@ public class SLTrailerController : MonoBehaviour
     public void MarcadorTrailerEncontrado()
     {
         if (!modoTrailerActivo)
+        {
             return;
+        }
 
         if (panelEscanearTrailer != null)
+        {
             panelEscanearTrailer.SetActive(false);
+        }
 
         if (panelTrailer != null)
+        {
             panelTrailer.SetActive(true);
+        }
 
-        // Solo la primera detección inicia el vídeo.
+        // Solo la primera detección empieza desde 0.
         if (!trailerYaIniciado)
         {
             trailerYaIniciado = true;
@@ -98,11 +142,13 @@ public class SLTrailerController : MonoBehaviour
     public void MarcadorTrailerPerdido()
     {
         if (!modoTrailerActivo)
+        {
             return;
+        }
 
-        // No hacemos nada.
-        // Una vez detectado el marcador,
-        // el vídeo sigue aunque dejemos de enfocarlo.
+        // Por ahora no hacemos nada.
+        // Una vez encontrado el marcador,
+        // el vídeo continúa reproduciéndose.
     }
 
     // =========================================================
@@ -112,13 +158,18 @@ public class SLTrailerController : MonoBehaviour
     public void PlayPausa()
     {
         if (videoPlayer == null)
+        {
             return;
+        }
 
         if (videoPlayer.isPlaying)
         {
             videoPlayer.Pause();
         }
-        else if (videoPlayer.isPrepared && !trailerTerminado)
+        else if (
+            videoPlayer.isPrepared &&
+            !trailerTerminado
+        )
         {
             videoPlayer.Play();
         }
@@ -131,7 +182,9 @@ public class SLTrailerController : MonoBehaviour
     public void ReiniciarTrailer()
     {
         if (!modoTrailerActivo)
+        {
             return;
+        }
 
         trailerYaIniciado = true;
         trailerTerminado = false;
@@ -146,19 +199,26 @@ public class SLTrailerController : MonoBehaviour
     public void CerrarTrailer()
     {
         modoTrailerActivo = false;
+
         trailerYaIniciado = false;
         trailerTerminado = false;
 
         ResetearVideo();
 
         if (panelTrailer != null)
+        {
             panelTrailer.SetActive(false);
+        }
 
         if (panelEscanearTrailer != null)
+        {
             panelEscanearTrailer.SetActive(false);
+        }
 
         if (panelMenu != null)
+        {
             panelMenu.SetActive(true);
+        }
     }
 
     // =========================================================
@@ -168,11 +228,16 @@ public class SLTrailerController : MonoBehaviour
     private void ReproducirDesdeInicio()
     {
         if (videoPlayer == null)
+        {
             return;
+        }
 
         videoPlayer.Stop();
 
-        LimpiarPantalla();
+        if (rawImageTrailer != null)
+        {
+            rawImageTrailer.texture = null;
+        }
 
         videoPlayer.Prepare();
     }
@@ -184,13 +249,29 @@ public class SLTrailerController : MonoBehaviour
     private void VideoPreparado(VideoPlayer vp)
     {
         if (!modoTrailerActivo)
+        {
             return;
+        }
 
         if (vp.canSetTime)
+        {
             vp.time = 0;
+        }
 
         if (vp.canStep)
+        {
             vp.frame = 0;
+        }
+
+        // Si la textura ya está disponible,
+        // la ponemos directamente en el RawImage.
+        if (
+            rawImageTrailer != null &&
+            vp.texture != null
+        )
+        {
+            rawImageTrailer.texture = vp.texture;
+        }
 
         vp.Play();
     }
@@ -212,33 +293,23 @@ public class SLTrailerController : MonoBehaviour
 
     private void ResetearVideo()
     {
-        if (videoPlayer == null)
-            return;
+        if (videoPlayer != null)
+        {
+            videoPlayer.Stop();
 
-        videoPlayer.Stop();
+            if (
+                videoPlayer.isPrepared &&
+                videoPlayer.canSetTime
+            )
+            {
+                videoPlayer.time = 0;
+            }
+        }
 
-        if (videoPlayer.isPrepared && videoPlayer.canSetTime)
-            videoPlayer.time = 0;
-
-        LimpiarPantalla();
-    }
-
-    // =========================================================
-    // LIMPIAR RENDER TEXTURE
-    // =========================================================
-
-    private void LimpiarPantalla()
-    {
-        if (renderTexture == null)
-            return;
-
-        RenderTexture anterior = RenderTexture.active;
-
-        RenderTexture.active = renderTexture;
-
-        GL.Clear(true, true, Color.black);
-
-        RenderTexture.active = anterior;
+        if (rawImageTrailer != null)
+        {
+            rawImageTrailer.texture = null;
+        }
     }
 
     void OnDestroy()
