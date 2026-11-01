@@ -437,8 +437,8 @@ Transform:
   m_GameObject: {fileID: 502407839}
   serializedVersion: 2
   m_LocalRotation: {x: 0.7071068, y: 0, z: 0, w: 0.7071068}
-  m_LocalPosition: {x: 0.013, y: 0.026, z: -0.031}
-  m_LocalScale: {x: 0.012, y: 0.012, z: 0.012}
+  m_LocalPosition: {x: 0.39000002, y: 0.78000003, z: -0.93}
+  m_LocalScale: {x: 0.36, y: 0.36, z: 0.36}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1846216296}
@@ -937,8 +937,8 @@ MonoBehaviour:
   mDataSetPath: 
   mAspectRatio: 1
   mImageTargetType: 3
-  mWidth: 0.2
-  mHeight: 0.2
+  mWidth: 6
+  mHeight: 6
   mRuntimeTexture: {fileID: 2800000, guid: d0744309159304e8a8ffb1209420ed64, type: 3}
   mMotionHint: 1
   mTrackingOptimization: 0
@@ -1007,8 +1007,8 @@ Transform:
   m_GameObject: {fileID: 1326571951}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.001, z: 0}
-  m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
+  m_LocalPosition: {x: 0, y: 0.03, z: 0}
+  m_LocalScale: {x: 1.8, y: 1.8, z: 1.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1180394468}
