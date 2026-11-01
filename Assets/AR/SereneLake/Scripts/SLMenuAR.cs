@@ -1,10 +1,9 @@
 using UnityEngine;
 
 /// <summary>
-/// Controla el flujo de la app de RA:
-///  1) Al arrancar se ve la cámara y el aviso "Apunta la cámara al marcador".
-///  2) Cuando Vuforia detecta el marcador (evento OnTargetFound del Image Target)
-///     se abre el menú principal.
+/// Controla el flujo del menú principal.
+/// Por defecto el menú se abre directamente al arrancar (sin escanear ningún marcador).
+/// El marcador solo se usa ahora para ver el tráiler (SLTrailerController).
 /// </summary>
 public class SLMenuAR : MonoBehaviour
 {
@@ -17,9 +16,13 @@ public class SLMenuAR : MonoBehaviour
     [Tooltip("Si está activo, el menú se queda abierto aunque se pierda el marcador")]
     public bool mantenerMenuAbierto = true;
 
+    [Tooltip("Abrir el menú al arrancar, sin escanear el marcador")]
+    public bool abrirMenuAlIniciar = true;
+
     void Awake()
     {
-        MostrarEscaneo();
+        if (abrirMenuAlIniciar) AbrirMenu();
+        else MostrarEscaneo();
     }
 
     /// Llamado desde el Image Target (DefaultObserverEventHandler > On Target Found)
