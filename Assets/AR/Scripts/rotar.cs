@@ -7,6 +7,14 @@ using UnityEngine;
 public class rotar : MonoBehaviour
 {
     public float rotSpeed = 0.4f;
+    private Vector3 posInicial;
+    private Quaternion rotInicial;
+
+    void Start()
+    {
+        posInicial = this.transform.localPosition;
+        rotInicial = this.transform.localRotation;
+    }
 
     void Update()
     {
@@ -16,10 +24,21 @@ public class rotar : MonoBehaviour
             {
                 if (Input.GetTouch(0).phase == TouchPhase.Moved)
                 {
-                    this.transform.Rotate(Input.GetTouch(0).deltaPosition.y * rotSpeed, -Input.GetTouch(0).deltaPosition.x * rotSpeed, 0, Space.World);
+                    // Gira según cómo mira la cámara: arrastrar a la derecha lo gira a la derecha
+                    // y arrastrar hacia arriba lo vuelca hacia arriba, se mire desde donde se mire
+                    Transform cam = Camera.main.transform;
+                    this.transform.Rotate(cam.up, -Input.GetTouch(0).deltaPosition.x * rotSpeed, Space.World);
+                    this.transform.Rotate(cam.right, Input.GetTouch(0).deltaPosition.y * rotSpeed, Space.World);
                 }
             }
         }
+    }
+
+    // Deja el señuelo recto y en su sitio, como al empezar
+    public void Reiniciar()
+    {
+        this.transform.localPosition = posInicial;
+        this.transform.localRotation = rotInicial;
     }
 
     private bool objIsTouched()
