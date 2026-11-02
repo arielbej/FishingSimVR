@@ -17,6 +17,7 @@ public class SLBotonesMenu : MonoBehaviour
         if (panelInstrucciones != null) panelInstrucciones.SetActive(false);
     }
 
+    public void Minijuego()     { SceneManager.LoadScene("MinijuegoSenuelos"); }
     public void VisorBarco3D()  { SceneManager.LoadScene("VisorBarco3D"); }
     public void PilotarBarco()  { SceneManager.LoadScene("AR_Movimiento Prueba"); }
     public void VerTrailer()
