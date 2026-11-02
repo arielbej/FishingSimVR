@@ -9,11 +9,21 @@ public class rotar : MonoBehaviour
     public float rotSpeed = 0.4f;
     private Vector3 posInicial;
     private Quaternion rotInicial;
+    private bool guardado = false;
 
     void Start()
     {
+        Guardar();
+    }
+
+    // Los señuelos que aún no se han mostrado no han pasado por Start,
+    // así que también se guarda su posición la primera vez que se reinician
+    void Guardar()
+    {
+        if (guardado) return;
         posInicial = this.transform.localPosition;
         rotInicial = this.transform.localRotation;
+        guardado = true;
     }
 
     void Update()
@@ -37,6 +47,7 @@ public class rotar : MonoBehaviour
     // Deja el señuelo recto y en su sitio, como al empezar
     public void Reiniciar()
     {
+        Guardar();
         this.transform.localPosition = posInicial;
         this.transform.localRotation = rotInicial;
     }
