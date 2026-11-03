@@ -115,6 +115,12 @@ public class SLTrailerController : MonoBehaviour
             return;
         }
 
+        if (!trailerYaIniciado)
+        {
+            SLAudioManager.PlayMarkerFound();
+            SLAudioManager.ModoTrailer(true);
+        }
+
         if (panelEscanearTrailer != null)
         {
             panelEscanearTrailer.SetActive(false);
@@ -157,6 +163,8 @@ public class SLTrailerController : MonoBehaviour
 
     public void PlayPausa()
     {
+        SLAudioManager.PlayClick();
+
         if (videoPlayer == null)
         {
             return;
@@ -181,6 +189,8 @@ public class SLTrailerController : MonoBehaviour
 
     public void ReiniciarTrailer()
     {
+        SLAudioManager.PlayOpen();
+
         if (!modoTrailerActivo)
         {
             return;
@@ -198,6 +208,9 @@ public class SLTrailerController : MonoBehaviour
 
     public void CerrarTrailer()
     {
+        SLAudioManager.PlayBack();
+        SLAudioManager.ModoTrailer(false);
+
         modoTrailerActivo = false;
 
         trailerYaIniciado = false;
