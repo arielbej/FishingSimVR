@@ -323,10 +323,10 @@ CapsuleCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.030982126
-  m_Height: 0.20449705
+  m_Radius: 0.008644423
+  m_Height: 0.1930804
   m_Direction: 1
-  m_Center: {x: 0.0013937689, y: 0.022248529, z: -0.003935676}
+  m_Center: {x: 0.0013937689, y: 0.027956858, z: -0.0026275897}
 --- !u!1 &797317538
 GameObject:
   m_ObjectHideFlags: 0
@@ -392,7 +392,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.0014, y: -0.0976, z: -0.0013202466}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 0.53331, y: 0.53331, z: 0.53331}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 160066145276000889}
@@ -464,7 +464,7 @@ HingeJoint:
     contactDistance: 0
   m_BreakForce: Infinity
   m_BreakTorque: Infinity
-  m_EnableCollision: 0
+  m_EnableCollision: 1
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
@@ -564,7 +564,7 @@ HingeJoint:
     contactDistance: 0
   m_BreakForce: Infinity
   m_BreakTorque: Infinity
-  m_EnableCollision: 0
+  m_EnableCollision: 1
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
@@ -801,7 +801,7 @@ HingeJoint:
     contactDistance: 0
   m_BreakForce: Infinity
   m_BreakTorque: Infinity
-  m_EnableCollision: 0
+  m_EnableCollision: 1
   m_EnablePreprocessing: 1
   m_MassScale: 1
   m_ConnectedMassScale: 1
@@ -1141,7 +1141,6 @@ GameObject:
   - component: {fileID: 9013070312289206350}
   - component: {fileID: 7179884813131342944}
   - component: {fileID: 5188985694975256682}
-  - component: {fileID: 9013070312289206351}
   m_Layer: 0
   m_Name: pTorus6
   m_TagString: Untagged
@@ -1879,7 +1878,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.021296589, y: 0.017964302, z: 0.017764978}
@@ -2055,8 +2054,8 @@ BoxCollider:
   m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 0.010193964, y: 0.008973811, z: 0.008784723}
-  m_Center: {x: -0.00018682492, y: -0.00009453646, z: 3.4924594e-10}
+  m_Size: {x: 0.009237074, y: 0.008643511, z: 0.008784723}
+  m_Center: {x: -0.000080352016, y: 0.00007061567, z: 3.0145825e-10}
 --- !u!4 &5325439905440768702
 Transform:
   m_ObjectHideFlags: 0
@@ -2088,7 +2087,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.021296589, y: 0.0179643, z: 0.017764978}
@@ -2464,7 +2463,6 @@ GameObject:
   - component: {fileID: 2687083926288468126}
   - component: {fileID: 6483832240957963904}
   - component: {fileID: 1899332644884717561}
-  - component: {fileID: 6483832240957963905}
   m_Layer: 0
   m_Name: pTorus6
   m_TagString: Untagged
@@ -2557,7 +2555,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.021296592, y: 0.0179643, z: 0.017764978}
@@ -2570,27 +2568,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6385930538943323421}
   m_Mesh: {fileID: -269169311728208888, guid: 0b409c1b1c078ea46a6a80baa12d6286, type: 3}
---- !u!65 &6483832240957963905
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6385930538943323421}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 1
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.03302434, y: 0.010000023, z: 0.033345062}
-  m_Center: {x: -0.00008230297, y: -0.0000000020466921, z: 0.0009384828}
 --- !u!23 &6526173045213003646
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2703,7 +2680,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.021296589, y: 0.017964303, z: 0.017764978}
@@ -3144,7 +3121,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.02834243, y: 0.010000042, z: 0.051514104}
@@ -3293,27 +3270,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 458990279288395877}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &9013070312289206351
-BoxCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1777574867013588915}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 1
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 0.03302429, y: 0.010000001, z: 0.033345066}
-  m_Center: {x: -0.0000822755, y: 0.0000000037252907, z: 0.00093848247}
 --- !u!23 &9103870282866436096
 MeshRenderer:
   m_ObjectHideFlags: 0
